@@ -1,0 +1,188 @@
+
+/**
+ * 
+ * @param {*} listener 
+ * 
+http Info: {
+   __type: "fetch",  // 使用底层库类型，有 fetch 和 xhr
+   url: "",
+   method: "",
+   params: {},
+   responseStatus: 200,
+   responseStatusText: "ok",
+   responseJson: {"code": 0},
+   responseText: "{"code": 0}",
+   requestTime: 100,  请求时间，单位为 ms
+   errMessage: ""  // 错误消息，比如接口超时了或者网络连接失败，会有 errMessage 错误，该错误一般是因为服务端没有响应导致
+}
+ */
+const listeners = {};
+let id = 1;
+
+function getId(){
+  return id++;
+}
+
+module.exports = function requestMonitor(listener){
+  listener = listener || (httpInfo => httpInfo);
+
+  if(typeof listener !== 'function'){
+    throw new Error(`The listener Type must be function`)
+  }
+
+  let _id = getId();
+  listeners[_id] = listener
+
+  function emit(info){
+    let endTime = new Date().getTime();
+    info.requestTime = endTime - info.startTime;
+    Object.keys(listeners).forEach(key=>{
+      listeners[key](info)
+    })
+  }
+
+  handleDefaultApi();
+
+  return {
+    cancel: ()=> {
+      delete listeners[_id]
+    }
+  }
+
+  function handleDefaultApi(){
+    if(window._requestMonitorIsLoad)return;
+    window._requestMonitorIsLoad = true;
+    handleXhr();
+    handleFetch();
+  }
+
+  function handleXhr(){
+    let _open = XMLHttpRequest.prototype.open;
+    let _send = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.open = function(method, url, async) {
+      this._monitor = {
+        __type: 'xhr',
+        startTime: new Date().getTime()
+      }
+      _open.call(this, method, url, async);
+      Object.assign (this._monitor, {
+        method,
+        url,
+      });
+    }
+  
+    XMLHttpRequest.prototype.send = function (...args) {
+      _send.apply (this, args);
+      try {
+        if (args.length > 0 && typeof args[0] === 'string') {
+          this._monitor.params = args[0];
+        }
+      } catch (err) {}
+      this.addEventListener (
+        'load',
+        function () {
+          
+          try{
+            let contentType = this.getResponseHeader('Content-Type').toLowerCase();
+            if(contentType.indexOf('application/json') !== -1){
+              this._monitor.responseText = this.responseText;
+            }else if(contentType.indexOf('text/') !== -1){
+              this._monitor.responseText = this.responseText;
+              this._monitor.responseJson = JSON.parse(this.responseText);
+            }
+          }catch(e){}
+          this._monitor.responseStatus = this.status;
+          this._monitor.responseStatusText = this.statusText;
+          emit(this._monitor)
+        },
+        false
+      );
+      this.addEventListener('error', ()=>{
+        this._monitor.errMessage = '网络请求异常'
+        emit(this._monitor)
+      })
+      this.addEventListener('timeout', ()=>{
+        this._monitor.errMessage = '请求超时'
+        emit(this._monitor)
+      })
+  
+    }
+  }
+  
+  function handleFetch(){
+    if (window.fetch) {
+      let _fetch = window.fetch;
+      function monitorFetch (url, options = {}) {
+        let params;
+        try {
+          if (options.data && typeof options === 'string') {
+            params = options.data;
+          }
+        } catch (er) {}
+        let _monitor = {
+          __type: 'fetch',
+          url,
+          method: options.method || 'GET',
+          params,
+          startTime: new Date().getTime()
+        };
+
+        setTimeout(()=>{
+          _monitor.errMessage = '请求超时';
+          emit(_monitor)
+        }, 60*1000)
+        
+        let result = _fetch (url, options).then (data => {
+          let _text = data.text;
+          _monitor.responseStatus = data.status;
+          _monitor.responseStatusText = data.statusText;
+          data.json = ()=>{
+            let p = new Promise( (resolve, reject)=>{
+              _text.call(data).then(text => {
+                try{
+                  let json = JSON.parse(text)
+                  _monitor.responseText = text;
+                  _monitor.responseJson = json;
+                  emit(_monitor)
+                  resolve(json)
+                }catch(e){
+                  reject(e)
+                }
+              }).catch(err=>{
+                reject(err)
+              });
+            })
+            return p;
+          }
+    
+          data.text = ()=>{
+            let p = new Promise( (resolve, reject)=>{
+              _text.call(data).then(text => {
+                try{
+                  _monitor.responseText = text;
+                 
+                  emit(_monitor)
+                  resolve(text)
+                }catch(e){
+                  reject(e)
+                }
+              }).catch(err=>{
+                reject(err)
+              });
+            })
+    
+            return p;
+          }
+          return data;
+          
+        }).catch(err=>{
+          _monitor.errMessage = '网络异常'
+          emit(_monitor)
+          throw err;
+        });
+        return result;
+      }
+      window.fetch = monitorFetch;
+    }
+  }
+}

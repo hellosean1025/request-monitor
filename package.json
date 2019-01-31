@@ -1,0 +1,49 @@
+{
+  "name": "request-monitor",
+  "version": "0.0.1",
+  "description": "错误监控",
+  "main": "dist/error-monitor.js",
+  "dependencies": {},
+  "devDependencies": {
+    "ava": "^1.1.0",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.5",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "jsdom": "^7.2.2",
+    "node-fetch": "^2.3.0",
+    "raf": "^3.4.1",
+    "webpack": "^4.26.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.14",
+    "xmlhttprequest": "^1.8.0"
+  },
+  "scripts": {
+    "start": "webpack-dev-server --open",
+    "build": "NODE_ENV=development webpack &&NODE_ENV=production webpack ",
+    "prepublish": "npm run test && npm run build",
+    "test": "NODE_ENV=test ava --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@git.sankuai.com/lsfe/error-monitor.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "ava": {
+    "files": [
+      "./test/*.test.js"
+    ],
+    "require": [
+      "./test/env/index.js"
+    ],
+    "babel": {
+      "testOptions": {
+        "presets": [
+          "env"
+        ]
+      }
+    }
+  }
+}
