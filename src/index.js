@@ -4,10 +4,10 @@
  * @param {*} listener 
  * 
 http Info: {
-   __type: "fetch",  // 使用底层库类型，有 fetch 和 xhr
+   requestType: "fetch",  // 使用底层库类型，有 fetch 和 xhr
    url: "",
    method: "",
-   params: {},
+   params: {}, // 请求参数
    responseStatus: 200,
    responseStatusText: "ok",
    responseJson: {"code": 0},
@@ -24,6 +24,21 @@ function getId(){
   return id++;
 }
 
+/**
+ * @param {any} obj The object to inspect.
+ * @returns {boolean} True if the argument appears to be a plain object.
+ */
+function isPlainObject(obj) {
+  if (typeof obj !== 'object' || obj === null) return false
+
+  let proto = obj
+  while (Object.getPrototypeOf(proto) !== null) {
+    proto = Object.getPrototypeOf(proto)
+  }
+
+  return Object.getPrototypeOf(obj) === proto
+}
+
 module.exports = function requestMonitor(listener){
   listener = listener || (httpInfo => httpInfo);
 
@@ -35,8 +50,14 @@ module.exports = function requestMonitor(listener){
   listeners[_id] = listener
 
   function emit(info){
+    Object.keys(info).forEach(key=>{
+      if(typeof info[key] === 'undefined'){
+        delete info[key]
+      }
+    })
     let endTime = new Date().getTime();
     info.requestTime = endTime - info.startTime;
+    delete info.startTime;
     Object.keys(listeners).forEach(key=>{
       listeners[key](info)
     })
@@ -109,20 +130,27 @@ module.exports = function requestMonitor(listener){
   
     }
   }
+
+  function getParams(options){
+    let params;
+    try {
+      if (options.body && typeof options.body === 'string') {
+        params = options.body;
+      }
+    } catch (er) {}
+    return params;
+  }
   
   function handleFetch(){
     if (window.fetch) {
-      let _fetch = window.fetch;
+      const _fetch = window.fetch;
       function monitorFetch (url, options = {}) {
-        let timeout = options.timeout || 60;
+        const timeout = options.timeout || 60;
         delete options.timeout;
-        let params;
-        try {
-          if (options.data && typeof options === 'string') {
-            params = options.data;
-          }
-        } catch (er) {}
-        let _monitor = {
+        
+        const params = getParams(options);
+        
+        const _monitor = {
           __type: 'fetch',
           url,
           method: options.method || 'GET',
@@ -130,22 +158,20 @@ module.exports = function requestMonitor(listener){
           startTime: new Date().getTime()
         };
 
-        let isTimeout = true;
-
-        setTimeout(()=>{
-          if(!isTimeout)return;
-          _monitor.errMessage = '请求超时';
-          emit(_monitor)
-        }, timeout *1000)
-        
-        let result = _fetch (url, options).then (data => {
-          let _text = data.text;
-          _monitor.responseStatus = data.status;
-          _monitor.responseStatusText = data.statusText;
-          isTimeout = false;
-          data.json = ()=>{
-            let p = new Promise( (resolve, reject)=>{
-              _text.call(data).then(text => {
+        const fetchRequest = Promise.race([
+          _fetch (url, options),
+          new Promise((resolve, reject)=>{
+            setTimeout(()=>{
+              reject(new Error('请求超时'))
+            }, timeout * 1000)
+          })
+        ]).then (response => {
+          let _text = response.text;
+          _monitor.responseStatus = response.status;
+          _monitor.responseStatusText = response.statusText;
+          response.json = ()=>{
+            return new Promise( (resolve, reject)=>{
+              _text.call(response).then(text => {
                 try{
                   let json = JSON.parse(text)
                   _monitor.responseText = text;
@@ -159,15 +185,13 @@ module.exports = function requestMonitor(listener){
                 reject(err)
               });
             })
-            return p;
           }
     
-          data.text = ()=>{
-            let p = new Promise( (resolve, reject)=>{
-              _text.call(data).then(text => {
+          response.text = ()=>{
+            return new Promise( (resolve, reject)=>{
+              _text.call(response).then(text => {
                 try{
                   _monitor.responseText = text;
-                 
                   emit(_monitor)
                   resolve(text)
                 }catch(e){
@@ -177,17 +201,22 @@ module.exports = function requestMonitor(listener){
                 reject(err)
               });
             })
-    
-            return p;
           }
-          return data;
+
+          return response;
           
-        }).catch(err=>{
-          _monitor.errMessage = '网络异常'
-          emit(_monitor)
-          throw err;
-        });
-        return result;
+        })
+
+        return new Promise((resolve, reject)=>{
+          fetchRequest.then(data=>{
+            resolve(data)
+          }).catch(err=>{
+            _monitor.errMessage = err.message || '网络异常';
+            emit(_monitor)
+            reject(err)
+          })
+          return fetchRequest;
+        })
       }
       window.fetch = monitorFetch;
     }

@@ -15,14 +15,16 @@
       axios({
         url: '/test.png',
         method: 'get',
-        data: {
+        params: {
           x: 1
         }
       }).then((s)=>{
         
       })
 
-      fetch('http://yapi.sankuai.com/mock/196/pet').then(s=>{
+      fetch('http://yapi.demo.qunar.com/mock/245/api/pet/111', {
+        method: 'get'
+      }).then(s=>{
         
         setTimeout(()=>{
           let result =s.json()
@@ -30,6 +32,12 @@
             
           })
         },1000)
+      })
+
+      fetch('http://yapi.demo.qunar.com/mock/245/api/store/order', {
+        method: 'post'
+      }).then(s=>{
+        s.json()
       })
 
     </script>
