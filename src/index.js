@@ -16,6 +16,7 @@ http Info: {
    errMessage: ""  // 错误消息，比如接口超时了或者网络连接失败，会有 errMessage 错误，该错误一般是因为服务端没有响应导致
 }
  */
+
 const listeners = {};
 let id = 1;
 
@@ -113,6 +114,8 @@ module.exports = function requestMonitor(listener){
     if (window.fetch) {
       let _fetch = window.fetch;
       function monitorFetch (url, options = {}) {
+        let timeout = options.timeout || 60;
+        delete options.timeout;
         let params;
         try {
           if (options.data && typeof options === 'string') {
@@ -127,15 +130,19 @@ module.exports = function requestMonitor(listener){
           startTime: new Date().getTime()
         };
 
+        let isTimeout = true;
+
         setTimeout(()=>{
+          if(!isTimeout)return;
           _monitor.errMessage = '请求超时';
           emit(_monitor)
-        }, 60*1000)
+        }, timeout *1000)
         
         let result = _fetch (url, options).then (data => {
           let _text = data.text;
           _monitor.responseStatus = data.status;
           _monitor.responseStatusText = data.statusText;
+          isTimeout = false;
           data.json = ()=>{
             let p = new Promise( (resolve, reject)=>{
               _text.call(data).then(text => {
