@@ -23,7 +23,7 @@ requestMonitor(info=>{
 ## requestMonitor 参数 
 errorMonitor.init(listener)
 
-|参数名| 默认值 |类型|描述|
+|参数名|  默认值 |类型|描述|
 |---|---|---|----
 |listener|null| Function |需要监听的函数
 
