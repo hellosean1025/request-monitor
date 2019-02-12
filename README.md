@@ -5,9 +5,8 @@
 
 ## 安装
 
-```
+```bash
 npm i request-monitor
-
 ```
 
 ## 使用
@@ -21,7 +20,10 @@ requestMonitor(info=>{
 ```
 
 ## requestMonitor 参数 
+
+```js
 errorMonitor.init(listener)
+```
 
 |参数名| 默认值 |类型|描述|
 |---|---|---|----
@@ -48,3 +50,9 @@ errorMonitor.init(listener)
 
 ```
 
+## fetch 超时监控
+
+```js
+fetch(apipath, options = {timeout: 60})
+```
+> 超过 60s ，中断请求

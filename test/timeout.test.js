@@ -9,7 +9,7 @@ test.cb('timeout config', t=>{
     t.is(info.errMessage, '请求超时')
     t.end()
   })
-  window.fetch('https://registry.npmjs.org/yapi-vendor', {timeout: 0.1}).then(res=>{
+  window.fetch('http://registry.npm.taobao.org/yapi-vendor', {timeout: 0.1}).then(res=>{
     res.json().then(data=>{})
   }).catch(e=>{})
 })

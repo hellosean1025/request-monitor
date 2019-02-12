@@ -9,7 +9,7 @@ test.cb('fetch api:text', t=>{
     num++;
     text = httpInfo;
   })
-  window.fetch('https://registry.npmjs.org/yapi-vendor').then(res=>{
+  window.fetch('http://registry.npm.taobao.org/yapi-vendor').then(res=>{
     res.text().then(data=>{
       t.is(num, 1)
       t.is(text.responseStatus, 200)

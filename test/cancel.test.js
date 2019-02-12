@@ -8,7 +8,7 @@ test.cb('cancel listener', t=>{
     text = httpInfo;
   })
   inst.cancel();
-  window.fetch('https://registry.npmjs.org/yapi-vendor').then(res=>{
+  window.fetch('http://registry.npm.taobao.org/yapi-vendor').then(res=>{
     res.text().then(data=>{
       t.is(text,null)
       t.end()

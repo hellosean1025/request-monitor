@@ -17,7 +17,7 @@ test.cb('fetch api:json', t=>{
     num++;
     info = httpInfo;
   })
-  window.fetch('https://registry.npmjs.org/yapi-vendor').then(res=>{
+  window.fetch('http://registry.npm.taobao.org/yapi-vendor').then(res=>{
     res.json().then(data=>{
       t.is(num, 1)
       t.is(info.responseStatus, 200)
