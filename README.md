@@ -22,7 +22,7 @@ requestMonitor(info=>{
 ## requestMonitor 参数 
 
 ```js
-errorMonitor.init(listener)
+errorMonitor(listener)
 ```
 
 |参数名|  默认值 |类型|描述|
@@ -34,7 +34,7 @@ errorMonitor.init(listener)
 
 ```js
 {
-   __type: "fetch",  // 使用底层库类型，有 fetch 和 xhr
+   requestType: "fetch",  // 使用底层库类型，有 fetch 和 xhr
    url: "",
    method: "",
    params: {},
