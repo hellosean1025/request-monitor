@@ -1,5 +1,5 @@
 import test from 'ava'
-import requestMonitor from '../src/index'
+import requestMonitor from '../../src/index'
 
 
 test('timeout test', t=>{

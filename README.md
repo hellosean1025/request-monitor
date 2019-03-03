@@ -34,16 +34,15 @@ errorMonitor(listener)
 
 ```js
 {
-   requestType: "fetch",  // 使用底层库类型，有 fetch 和 xhr
+   __type: "fetch",  // 使用底层库类型，有 fetch 和 xhr
    url: "",
    method: "",
    params: {},
-   responseStatus: 200,
+   responseStatus: 200,  
    responseStatusText: "ok",
    responseJson: {"code": 0},
    responseText: "{"code": 0}",
-   requestTime: 100,  请求时间，单位为 ms
-   errMessage: ""  // 错误消息，比如接口超时了或者网络连接失败，会有 errMessage 错误，该错误一般是因为服务端没有响应导致
+   requestTime: 100,  请求花费时间，单位为 ms
 }
 
 
