@@ -57,7 +57,9 @@ function handleXhr (emit) {
       function () {
         let contentType = this.getResponseHeader (
           'Content-Type'
-        ).toLowerCase ();
+        );
+        contentType = contentType || '';
+        contentType = contentType.toLowerCase ()
         if (contentType.indexOf ('application/json') !== -1) {
           this._monitor.responseText = this.responseText;
           try{
