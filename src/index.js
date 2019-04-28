@@ -216,19 +216,26 @@ function requestMonitor (listener) {
 
   let _id = getId ();
   listeners[_id] = listener;
-
   function emit (info) {
-    Object.keys (info).forEach (key => {
-      if (typeof info[key] === 'undefined') {
-        delete info[key];
+      try{
+        Object.keys (info).forEach (key => {
+          if (typeof info[key] === 'undefined') {
+            delete info[key];
+          }
+        });
+        let endTime = new Date ().getTime ();
+        info.requestTime = endTime - info.startTime;
+        delete info.startTime;
+        Object.keys (listeners).forEach (key => {
+          try{
+            listeners[key] (info);
+          }catch(err){
+            console.error(`listener Error`,listeners[key] ,info, err)
+          }
+        });
+      }catch(e){
+        console.error('emit error', info)
       }
-    });
-    let endTime = new Date ().getTime ();
-    info.requestTime = endTime - info.startTime;
-    delete info.startTime;
-    Object.keys (listeners).forEach (key => {
-      listeners[key] (info);
-    });
   }
 
   handleDefaultApi (emit);
