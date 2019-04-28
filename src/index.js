@@ -230,11 +230,11 @@ function requestMonitor (listener) {
           try{
             listeners[key] (info);
           }catch(err){
-            console.error(`listener Error`,listeners[key] ,info, err)
+            console.error(err)
           }
         });
       }catch(e){
-        console.error('emit error', info)
+        console.error(e)
       }
   }
 
