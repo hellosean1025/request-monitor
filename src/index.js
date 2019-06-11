@@ -33,12 +33,14 @@ function handleDefaultApi (emit) {
 function handleXhr (emit) {
   let _open = XMLHttpRequest.prototype.open;
   let _send = XMLHttpRequest.prototype.send;
-  XMLHttpRequest.prototype.open = function (method, url, async) {
+  XMLHttpRequest.prototype.open = function (...args) {
+    const method = args[0];
+    const url = args[1];
     this._monitor = {
       __type: 'xhr',
       startTime: new Date ().getTime (),
     };
-    _open.call (this, method, url, async);
+    _open.apply (this, args);
     Object.assign (this._monitor, {
       method,
       url,
