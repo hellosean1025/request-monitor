@@ -12,33 +12,41 @@
         console.log(info)
       })
       
-      axios({
-        url: '/test.png',
-        method: 'get',
-        params: {
-          x: 1
-        }
-      }).then((s)=>{
-        
-      })
+      setInterval(()=>{
+        let CancelToken = axios.CancelToken
+        var source = CancelToken.source();
+        axios({
+          url: 'http://yapi.sankuai.com/mock/974/sss',
+          method: 'get',
+          params: {
+            x: 1
+          },
+          cancelToken: source.token
+        }).then((s)=>{
+          console.log(s)
+        })
+        // setTimeout(()=>{
+        //   source.cancel('cancel')
+        // },1000)
+      }, 4000)
 
-      fetch('http://yapi.demo.qunar.com/mock/245/api/pet/111', {
-        method: 'get'
-      }).then(s=>{
+      // fetch('http://yapi.demo.qunar.com/mock/245/api/pet/111', {
+      //   method: 'get'
+      // }).then(s=>{
         
-        setTimeout(()=>{
-          let result =s.json()
-          result.then(text=>{
+      //   setTimeout(()=>{
+      //     let result =s.json()
+      //     result.then(text=>{
             
-          })
-        },1000)
-      })
+      //     })
+      //   },1000)
+      // })
 
-      fetch('http://yapi.demo.qunar.com/mock/245/api/store/order', {
-        method: 'post'
-      }).then(s=>{
-        s.json()
-      })
+      // fetch('http://yapi.demo.qunar.com/mock/245/api/store/order', {
+      //   method: 'post'
+      // }).then(s=>{
+      //   s.json()
+      // })
 
     </script>
   </body>

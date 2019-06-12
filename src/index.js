@@ -22,6 +22,13 @@ function getId () {
   return id++;
 }
 
+function handleEndTime(info){
+  let endTime = new Date ().getTime ();
+  info.requestTime = endTime - info.startTime;
+  delete info.startTime;
+}
+
+
 function handleDefaultApi (emit) {
   if (window._requestMonitorIsLoad) return null;
   window._requestMonitorIsLoad = true;
@@ -61,7 +68,8 @@ function handleXhr (emit) {
           'Content-Type'
         );
         contentType = contentType || '';
-        contentType = contentType.toLowerCase ()
+        contentType = contentType.toLowerCase ();
+        handleEndTime(this._monitor)
         if (contentType.indexOf ('application/json') !== -1) {
           this._monitor.responseText = this.responseText;
           try{
@@ -84,7 +92,8 @@ function handleXhr (emit) {
     });
     this.addEventListener ('timeout', () => {
       this._monitor.responseStatusText = 'Network request timeout';
-      this._monitor.responseStatus = 504;
+      this._monitor.responseStatus = 1504;
+      console.error('curXhrObj:', this)
       emit (this._monitor);
     });
   };
@@ -123,7 +132,7 @@ function handleFetch (emit) {
           new _Promise ((resolve, reject) => {
             setTimeout (() => {
               let err = new Error ('Network request timeout');
-              err.status = 504;
+              err.status = 1504;
               reject (err);
             }, timeout);
           }),
@@ -138,6 +147,7 @@ function handleFetch (emit) {
                 .call (response)
                 .then (text => {
                   try {
+                    handleEndTime(_monitor)
                     let json = JSON.parse (text);
                     _monitor.responseText = text;
                     _monitor.responseJson = json;
@@ -160,6 +170,7 @@ function handleFetch (emit) {
                 .call (response)
                 .then (text => {
                   try {
+                    handleEndTime(_monitor)
                     _monitor.responseText = text;
                     emit (_monitor);
                     resolve (text);
@@ -225,9 +236,6 @@ function requestMonitor (listener) {
             delete info[key];
           }
         });
-        let endTime = new Date ().getTime ();
-        info.requestTime = endTime - info.startTime;
-        delete info.startTime;
         Object.keys (listeners).forEach (key => {
           try{
             listeners[key] (info);
