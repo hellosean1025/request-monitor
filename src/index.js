@@ -218,6 +218,27 @@ function handleFetch (emit) {
   }
 }
 
+function emit (info) {
+  try{
+    Object.keys (info).forEach (key => {
+      if (typeof info[key] === 'undefined') {
+        delete info[key];
+      }
+    });
+    Object.keys (listeners).forEach (key => {
+      setTimeout(()=> {
+        try{
+          listeners[key] (info)
+        }catch(err){
+          console.error(err)
+        }
+      })
+    });
+  }catch(e){
+    console.error(e)
+  }
+}
+
 module.exports = requestMonitor;
 
 function requestMonitor (listener) {
@@ -229,25 +250,6 @@ function requestMonitor (listener) {
 
   let _id = getId ();
   listeners[_id] = listener;
-  function emit (info) {
-      try{
-        Object.keys (info).forEach (key => {
-          if (typeof info[key] === 'undefined') {
-            delete info[key];
-          }
-        });
-        Object.keys (listeners).forEach (key => {
-          try{
-            listeners[key] (info);
-          }catch(err){
-            console.error(err)
-          }
-        });
-      }catch(e){
-        console.error(e)
-      }
-  }
-
   handleDefaultApi (emit);
 
   return {

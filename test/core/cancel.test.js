@@ -10,8 +10,10 @@ test.cb('cancel listener', t=>{
   inst.cancel();
   window.fetch('http://registry.npm.taobao.org/yapi-vendor').then(res=>{
     res.text().then(data=>{
-      t.is(text,null)
-      t.end()
+      setTimeout(()=>{
+        t.is(text,null)
+        t.end()
+      },1000)
     })
     
   })
