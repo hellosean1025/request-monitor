@@ -12,7 +12,7 @@
         console.log(info)
       })
       
-      setInterval(()=>{
+      //setInterval(()=>{
         let CancelToken = axios.CancelToken
         var source = CancelToken.source();
         axios({
@@ -21,14 +21,14 @@
           params: {
             x: 1
           },
-          cancelToken: source.token
+          timeout: 60000
         }).then((s)=>{
           console.log(s)
         })
         // setTimeout(()=>{
         //   source.cancel('cancel')
         // },1000)
-      }, 4000)
+      //}, 4000)
 
       // fetch('http://yapi.demo.qunar.com/mock/245/api/pet/111', {
       //   method: 'get'

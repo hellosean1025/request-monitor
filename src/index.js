@@ -69,7 +69,6 @@ function handleXhr (emit) {
         );
         contentType = contentType || '';
         contentType = contentType.toLowerCase ();
-        handleEndTime(this._monitor)
         if (contentType.indexOf ('application/json') !== -1) {
           this._monitor.responseText = this.responseText;
           try{
@@ -86,13 +85,13 @@ function handleXhr (emit) {
       false
     );
     this.addEventListener ('error', () => {
-      this._monitor.responseStatusText = 'Network request exception';
+      this._monitor.responseStatusText = 'Xhr Network request exception';
       this._monitor.responseStatus = -1;
       emit (this._monitor);
     });
     this.addEventListener ('timeout', () => {
-      this._monitor.responseStatusText = 'Network request timeout';
-      this._monitor.responseStatus = 1504;
+      this._monitor.responseStatusText = '前端xhr Network request timeout : ' + this.timeout ;
+      this._monitor.responseStatus = 599;
       console.error('curXhrObj:', this)
       emit (this._monitor);
     });
@@ -131,8 +130,8 @@ function handleFetch (emit) {
           _fetch (url, options),
           new _Promise ((resolve, reject) => {
             setTimeout (() => {
-              let err = new Error ('Network request timeout');
-              err.status = 1504;
+              let err = new Error ('前端fetch Network request timeout: ' + options.timeout);
+              err.status = 599;
               reject (err);
             }, timeout);
           }),
@@ -147,7 +146,6 @@ function handleFetch (emit) {
                 .call (response)
                 .then (text => {
                   try {
-                    handleEndTime(_monitor)
                     let json = JSON.parse (text);
                     _monitor.responseText = text;
                     _monitor.responseJson = json;
@@ -170,7 +168,6 @@ function handleFetch (emit) {
                 .call (response)
                 .then (text => {
                   try {
-                    handleEndTime(_monitor)
                     _monitor.responseText = text;
                     emit (_monitor);
                     resolve (text);
@@ -194,7 +191,7 @@ function handleFetch (emit) {
           })
           .catch (err => {
             _monitor.responseStatus = err.status || -1;
-            _monitor.responseText = err.message || 'Network request exception';
+            _monitor.responseText = err.message || 'Fetch Network request exception';
             emit (_monitor);
             reject (err);
           });
@@ -219,6 +216,7 @@ function handleFetch (emit) {
 }
 
 function emit (info) {
+  handleEndTime(info)
   try{
     Object.keys (info).forEach (key => {
       if (typeof info[key] === 'undefined') {
