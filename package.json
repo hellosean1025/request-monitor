@@ -1,6 +1,6 @@
 {
   "name": "request-monitor",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "错误监控",
   "main": "dist/request-monitor.js",
   "dependencies": {},
