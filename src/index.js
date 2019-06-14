@@ -6,6 +6,7 @@ http Info: {
    __type: "fetch",  // 使用底层库类型，有 fetch 和 xhr
    url: "",
    method: "",
+   timeout: 0, // 超时时间
    params: {}, // 请求参数
    responseStatus: 200,  // 如果是 -1 ，代表网络异常
    responseStatusText: "ok",
@@ -45,7 +46,6 @@ function handleXhr (emit) {
     const url = args[1];
     this._monitor = {
       __type: 'xhr',
-      startTime: new Date ().getTime (),
     };
     _open.apply (this, args);
     Object.assign (this._monitor, {
@@ -56,6 +56,8 @@ function handleXhr (emit) {
 
   XMLHttpRequest.prototype.send = function (...args) {
     _send.apply (this, args);
+    this._monitor.startTime = new Date ().getTime ();
+    this._monitor.timeout = this.timeout || 0;
     try {
       if (args.length > 0 && typeof args[0] === 'string') {
         this._monitor.params = args[0];
@@ -89,13 +91,11 @@ function handleXhr (emit) {
       this._monitor.responseStatus = -1;
       emit (this._monitor);
     });
+
     this.addEventListener ('timeout', () => {
-      if(this.timeout){
-        this._monitor.responseStatusText = '前端xhr Network request timeout : ' + this.timeout ;
-      this._monitor.responseStatus = 504;
-      }
       emit (this._monitor);
     });
+
   };
 }
 
@@ -114,8 +114,6 @@ function handleFetch (emit) {
     const _Promise = window.fetch.Promise || Promise;
     const _fetch = window.fetch;
     function monitorFetch (url, options = {}) {
-      const timeout = options.timeout || 60000;
-
       const params = getParams (options);
 
       const _monitor = {
@@ -124,19 +122,22 @@ function handleFetch (emit) {
         method: options.method || 'GET',
         params,
         startTime: new Date ().getTime (),
+        timeout: options.timeout || 0
       };
 
-      const fetchRequest = _Promise
-        .race ([
-          _fetch (url, options),
-          new _Promise ((resolve, reject) => {
-            setTimeout (() => {
-              let err = new Error ('前端fetch Network request timeout: ' + options.timeout);
-              err.status = 504;
-              reject (err);
-            }, timeout);
-          }),
-        ])
+      const fetchRequest = 
+        // _Promise
+        // .race ([
+          
+        //   new _Promise ((resolve, reject) => {
+        //     setTimeout (() => {
+        //       let err = new Error ('前端fetch Network request timeout: ' + options.timeout);
+        //       err.status = 504;
+        //       reject (err);
+        //     }, timeout);
+        //   }),
+        // ])
+        _fetch (url, options)
         .then (response => {
           let _text = response.text;
           _monitor.responseStatus = response.status;

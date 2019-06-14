@@ -21,7 +21,7 @@
           params: {
             x: 1
           },
-          timeout: 60000
+          timeout: 3000
         }).then((s)=>{
           console.log(s)
         })
@@ -30,23 +30,23 @@
         // },1000)
       //}, 4000)
 
-      // fetch('http://yapi.demo.qunar.com/mock/245/api/pet/111', {
-      //   method: 'get'
-      // }).then(s=>{
+      fetch('http://yapi.demo.qunar.com/mock/245/api/pet/111', {
+        method: 'get'
+      }).then(s=>{
         
-      //   setTimeout(()=>{
-      //     let result =s.json()
-      //     result.then(text=>{
+        setTimeout(()=>{
+          let result =s.json()
+          result.then(text=>{
             
-      //     })
-      //   },1000)
-      // })
+          })
+        },1000)
+      })
 
-      // fetch('http://yapi.demo.qunar.com/mock/245/api/store/order', {
-      //   method: 'post'
-      // }).then(s=>{
-      //   s.json()
-      // })
+      fetch('http://yapi.demo.qunar.com/mock/245/api/store/order', {
+        method: 'post'
+      }).then(s=>{
+        s.json()
+      })
 
     </script>
   </body>
