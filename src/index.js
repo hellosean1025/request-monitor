@@ -90,9 +90,10 @@ function handleXhr (emit) {
       emit (this._monitor);
     });
     this.addEventListener ('timeout', () => {
-      this._monitor.responseStatusText = '前端xhr Network request timeout : ' + this.timeout ;
-      this._monitor.responseStatus = 599;
-      console.error('curXhrObj:', this)
+      if(this.timeout){
+        this._monitor.responseStatusText = '前端xhr Network request timeout : ' + this.timeout ;
+      this._monitor.responseStatus = 504;
+      }
       emit (this._monitor);
     });
   };
@@ -131,7 +132,7 @@ function handleFetch (emit) {
           new _Promise ((resolve, reject) => {
             setTimeout (() => {
               let err = new Error ('前端fetch Network request timeout: ' + options.timeout);
-              err.status = 599;
+              err.status = 504;
               reject (err);
             }, timeout);
           }),

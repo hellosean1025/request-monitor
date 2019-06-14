@@ -6,7 +6,7 @@ test.cb('timeout test', t=>{
   let info;
   requestMonitor((data)=>{
     info = data;
-    t.is(info.responseStatus, 599)
+    t.is(info.responseStatus, 504)
     t.end()
   })
   window.fetch('http://registry.npm.taobao.org/yapi-vendor', {timeout: 1}).then(res=>{
