@@ -171,13 +171,9 @@ function handleFetch (emit) {
               _text
                 .call (response)
                 .then (text => {
-                  try {
-                    _monitor.responseText = text;
-                    emit (_monitor);
-                    resolve (text);
-                  } catch (e) {
-                    reject (e);
-                  }
+                  _monitor.responseText = text;
+                  emit (_monitor);
+                  resolve (text);
                 })
                 .catch (err => {
                   reject (err);
