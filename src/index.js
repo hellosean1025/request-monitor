@@ -155,6 +155,8 @@ function handleFetch (emit) {
                     resolve (json);
                   } catch (e) {
                     e.type = 'invalid-json';
+                    _monitor.responseText = text;
+                    emit(_monitor);
                     reject (e);
                   }
                 })
