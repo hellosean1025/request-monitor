@@ -26,7 +26,7 @@ function getId () {
 function handleEndTime(info){
   let endTime = new Date ().getTime ();
   info.requestTime = endTime - info.startTime;
-  delete info.startTime;
+  info.endTime = endTime;
 }
 
 
