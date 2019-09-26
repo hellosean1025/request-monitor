@@ -38,6 +38,28 @@ function handleDefaultApi (emit) {
   return true;
 }
 
+function handleHeader(xhr) {
+  try{
+    var headers = xhr.getAllResponseHeaders();
+    if (!headers) return;
+    if (typeof headers === 'object') {
+        return headers;
+    }
+    var newHeaders = {}, headers = headers.split(/[\r\n]/).forEach(function (header) {
+        var index = header.indexOf(":");
+        var name = header.substr(0, index);
+        var value = header.substr(index + 2);
+        if (name) {
+            newHeaders[name] = value;
+        }
+
+    })
+    return newHeaders;
+  }catch(e){
+    return {}
+  }
+}
+
 function handleXhr (emit) {
   let _open = XMLHttpRequest.prototype.open;
   let _send = XMLHttpRequest.prototype.send;
@@ -80,6 +102,7 @@ function handleXhr (emit) {
         } else if (contentType.indexOf ('text/plain') !== -1) {
           this._monitor.responseText = this.responseText;
         }
+        this._monitor.responseHeaders = handleHeader(this);
         this._monitor.responseStatus = this.status;
         this._monitor.responseStatusText = this.statusText;
         emit (this._monitor);
@@ -113,6 +136,21 @@ function handleFetch (emit) {
   if (window.fetch) {
     const _Promise = window.fetch.Promise || Promise;
     const _fetch = window.fetch;
+
+    function getHeaders(response){
+      try{
+        let headers = response.headers.entries();
+        let result = {};
+        for (var pair of headers) {
+          result[pair[0]] = pair[1];
+        }
+        return result;
+      }catch(e){
+        console.warn(e);
+        return {};
+      }
+    }
+
     function monitorFetch (url, options = {}) {
       const params = getParams (options);
 
@@ -141,6 +179,7 @@ function handleFetch (emit) {
         .then (response => {
           let _text = response.text;
           _monitor.responseStatus = response.status;
+          _monitor.responseHeaders = getHeaders(response)
           _monitor.responseStatusText = response.statusText;
           response.json = () => {
             return new _Promise ((resolve, reject) => {

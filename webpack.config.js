@@ -21,5 +21,8 @@ module.exports = {
   devtool: process.env.NODE_ENV === 'production' ? false: 'inline-source-map',
   devServer: {
     contentBase: './',
+    headers: {
+      'test': '1111aaa'
+    }
   },
 };
