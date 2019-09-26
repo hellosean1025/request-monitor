@@ -38,6 +38,7 @@ errorMonitor(listener)
    url: "",
    method: "",
    params: {},
+   responseHeaders: {}, // 响应数据 headers 信息
    responseStatus: 200,  
    responseStatusText: "ok",
    responseJson: {"code": 0},
