@@ -93,6 +93,10 @@ function handleXhr (emit) {
         );
         contentType = contentType || '';
         contentType = contentType.toLowerCase ();
+        const ignores = ['blob', 'arraybuffer', 'moz-chunked-arraybuffer', "ms-stream"];
+        if(this.responseType && ignores.indexOf(this.responseType) > -1){
+          return; // ignore blob type
+        }
         if (contentType.indexOf ('application/json') !== -1) {
           this._monitor.responseText = this.responseText;
           try{
